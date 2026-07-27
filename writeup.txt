@@ -67,20 +67,19 @@ Adversarial test table:
 
 Question | Top score | Bot behavior | Verdict
 --- | --- | --- | ---
-how often should I water tomatoes? | 0.312 | Answered from Plant Care Guide with a source citation. | Pass
-can the app identify a plant from a photo? | ______ | Answered from Plant Identification with a source citation. | Pass
-will the app warn me before frost? | ______ | Answered from Weather and Frost Alerts with a source citation. | Pass
-do you offer gift cards? | ______ | Should refuse with no citation. | Pass if refused
-do you have phone support? | ______ | Should refuse with no citation. | Pass if refused
+how often should I water tomatoes? | 0.445 | Answered from Watering Reminders with a source citation. | Pass
+can the app identify a plant from a photo? | 0.595 | Answered from Plant Identification with a source citation. | Pass
+will the app warn me before frost? | 0.575 | Answered from Weather and Frost Alerts with a source citation. | Pass
+do you offer gift cards? | 0.111 | Refused with no citation. | Pass
+do you have phone support? | 0.298 | Refused with no citation. | Pass
+do you offer refunds? | 0.118 | Refused with no citation. | Pass
+can I return a wetsuit? | 0.025 | Refused with no citation. | Pass
 can you help with my math homework? | 0.115 from earlier test | Refused with no citation. | Pass
 
 For a customer-facing bot, confidently citing the wrong policy is worse than refusing a question it might have answered.
 A wrong citation can mislead a customer and make the business look like it promised something it did not actually promise.
 A refusal is less convenient, but it is safer because it admits that the answer is not grounded in the documents. 
 This connects to stakes-based verification: the higher the risk of a wrong answer, the more important it is for the bot to be grounded and checkable.
-
-Note to finish the table:
-Before submitting, I should run each test question in the browser and fill in the blank top scores from the similarity score shown by the bot.
 
 
 Homework 4 Write-up
@@ -122,4 +121,3 @@ Account-based sharing with real identity is better when access needs to be audit
 
 The credentials hiding inside a presigned URL are a temporary signed authorization to perform a specific S3 action on a specific object. 
 Its expiry is like the token lifetime lesson from SSO: access should expire automatically instead of lasting forever.
-
