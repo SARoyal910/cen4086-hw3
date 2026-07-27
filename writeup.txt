@@ -1,0 +1,125 @@
+Homework 3 Write-up
+
+Business: GardenGuru
+
+Part 1 - Business documents and vector search
+
+My business is GardenGuru, a gardening support app. 
+The bot's documents cover plant identification, planting zones, garden planning, plant care, companion planting, pest and disease help, harvest tracking, weather and frost alerts, offline access, and the community garden network.
+
+The bot can match a question like "how often should I water tomatoes?" to the Plant Care Guide because it is using embeddings instead of only matching exact words.
+The embedding model converts the question and each document into vectors. Texts with similar meanings end up near each other, so the question can match a care guide even if the wording is not exactly the same.
+
+In a real production system, the full policy and product documents would live in object storage because those are the citable source files.
+The embeddings would live in a vector database because that database is built for nearest-in-meaning search.
+In this assignment, the DOCS array is doing both jobs at once: it stores the document text and also holds the vectors after the page loads.
+
+Part 2 - System prompt, persona, and boundaries
+
+The system prompt is:
+"You are the friendly support assistant for GardenGuru. Greet users warmly, keep answers short, and never discuss anything but the gardening information."
+
+The bot reads the system prompt from the text box. If the prompt includes "friendly" or "warm", the bot starts replies with a greeting.
+If it includes "short", the bot skips the extra intro sentence and gives a shorter answer. The boundary rule is that the bot should only answer GardenGuru gardening questions.
+For example, when I asked "can you help with my math homework?", the bot refused instead of citing a gardening document.
+
+Two-persona test:
+
+Question:
+"how often should I water tomatoes?"
+
+Persona 1 prompt:
+"You are the friendly support assistant for GardenGuru. Greet users warmly, keep answers short, and never discuss anything but the gardening information."
+
+Persona 1 reply:
+"Hi there! Every plant includes recommended sunlight, watering frequency, soil preferences, fertilization schedules, and expected growing conditions.
+Care recommendations are adjusted based on weather and seasonal changes whenever possible."
+
+Persona 2 prompt:
+"You are the formal support assistant for GardenGuru. Answer using only the gardening information and never discuss anything but the gardening information."
+
+Persona 2 reply:
+"Here is what our "Plant Care Guide" policy says: Every plant includes recommended sunlight, watering frequency, soil preferences, fertilization schedules, and expected growing conditions. Care recommendations are adjusted based on weather and seasonal changes whenever possible."
+
+This shows that the same bot can change its tone using configuration instead of changing the model.
+
+Part 3 - Context window
+
+I added a CONTEXT_LIMIT character budget and a context window display. The page shows how many characters are currently inside the context window.
+When the history gets too long, the oldest messages are removed from the active history and grayed out on the screen.
+
+Context window test:
+1. I told the bot: "my name is Royal."
+2. I pasted long filler text to push old messages out of the context window.
+3. I asked: "what is my name?"
+
+The bot failed to remember the name once that earlier message is outside the context window. That happens because my name only lived in the chat history.
+It was not part of the GardenGuru documents or the vector database. The bot can still answer document questions after forgetting my name because the GardenGuru documents are still stored in DOCS and their vectors are still available for retrieval.
+
+Part 4 - Hallucination threshold and adversarial testing
+
+I added a THRESHOLD so the bot refuses weak matches. If the best similarity score is below the threshold, the bot says:
+"That's not in my documents - let me connect you with a person."
+
+The refusal does not include a citation. This matters because a citation should only appear when the bot is actually using a source document.
+
+Adversarial test table:
+
+Question | Top score | Bot behavior | Verdict
+--- | --- | --- | ---
+how often should I water tomatoes? | 0.312 | Answered from Plant Care Guide with a source citation. | Pass
+can the app identify a plant from a photo? | ______ | Answered from Plant Identification with a source citation. | Pass
+will the app warn me before frost? | ______ | Answered from Weather and Frost Alerts with a source citation. | Pass
+do you offer gift cards? | ______ | Should refuse with no citation. | Pass if refused
+do you have phone support? | ______ | Should refuse with no citation. | Pass if refused
+can you help with my math homework? | 0.115 from earlier test | Refused with no citation. | Pass
+
+For a customer-facing bot, confidently citing the wrong policy is worse than refusing a question it might have answered.
+A wrong citation can mislead a customer and make the business look like it promised something it did not actually promise.
+A refusal is less convenient, but it is safer because it admits that the answer is not grounded in the documents. 
+This connects to stakes-based verification: the higher the risk of a wrong answer, the more important it is for the bot to be grounded and checkable.
+
+Note to finish the table:
+Before submitting, I should run each test question in the browser and fill in the blank top scores from the similarity score shown by the bot.
+
+
+Homework 4 Write-up
+
+Live site URL: http://cen4086-hw4-sar-mmdd.s3-website.us-east-2.amazonaws.com
+
+Part 2 - One master copy
+
+I moved the GardenGuru documents out of index.html and into docs.json. The chatbot now fetches ./docs.json when the page loads, so the documents live as one shared object next to the website in S3 instead of being hard-coded into the page.
+
+Before the docs.json change, the question "can you remind me when to water tomatoes?" matched the general Plant Care Guide document. 
+The answer was: "Hi there! Every plant includes recommended sunlight, watering frequency, soil preferences, fertilization schedules, and expected growing conditions. Care recommendations are adjusted based on weather and seasonal changes whenever possible."
+
+After the docs.json change, I added an 11th document called Watering Reminders and reloaded the live site without changing index.html. 
+The same question now answers from Watering Reminders: "Hi there! Garden Guru can create watering reminders for individual plants, containers, raised beds, and vegetable crops such as tomatoes. Reminder timing can be adjusted when recent rainfall or frost alerts suggest watering should be delayed."
+
+This proves the bot changed because the master copy changed, not because the code changed. If each teammate kept a separate copy of the policies, customer answers could come from stale or conflicting documents. 
+With docs.json in shared object storage, the bot and authorized teammates read the same current version.
+
+Part 3 - Break it, then time-travel
+
+After I enabled bucket versioning, I uploaded another revision of docs.json so the object had version history. Then I deleted docs.json on purpose. Reloading the site showed this missing-documents message:
+
+Missing documents: docs.json must be uploaded next to index.html and allowed by the bucket policy.
+
+In the S3 version list, the current top item was a delete marker, and the older saved versions of docs.json were still listed underneath it. 
+Removing the delete marker restored the latest surviving version of docs.json, and the chatbot worked again.
+
+S3 replication across availability zones did not save me because replication protects against hardware or facility failure, not against an authorized user deleting the object. 
+Versioning saved me because S3 kept older versions and represented the deletion as a removable delete marker.
+
+Part 4 - Share a private draft, properly
+
+I uploaded private-draft.txt as a private object. Opening it from the public website endpoint returned Access Denied because the bucket policy only allows public reads for index.html and docs.json. 
+The draft is not one of the two public objects, so the denial is least privilege working correctly.
+
+Link-sharing is the right model for temporary access to one specific object, especially when the recipient does not need a long-term account. 
+Account-based sharing with real identity is better when access needs to be audited, revoked per person, tied to a role, or used for ongoing collaboration.
+
+The credentials hiding inside a presigned URL are a temporary signed authorization to perform a specific S3 action on a specific object. 
+Its expiry is like the token lifetime lesson from SSO: access should expire automatically instead of lasting forever.
+

@@ -1,0 +1,2 @@
+Draft sale policy: Garden Guru is considering a random fall garden planning sale that would give invited customers 25% off annual subscriptions for one week. 
+This policy is not public yet, should not be included in docs.json, and should only be shared through an expiring presigned URL with people who need to review it.

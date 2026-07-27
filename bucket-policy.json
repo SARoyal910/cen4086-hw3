@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadExactlyTwoObjects",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": [
+        "arn:aws:s3:::cen4086-hw4-sar-mmdd/index.html",
+        "arn:aws:s3:::cen4086-hw4-sar-mmdd/docs.json"
+      ]
+    }
+  ]
+}
