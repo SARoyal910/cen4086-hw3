@@ -1,27 +1,31 @@
-Homework 3 Part 5 Cost Memo
+Homework 4 Part 5 Cost Memo
 
 Business: GardenGuru support chatbot
 
-GardenGuru has two main ways to run its chatbot in production. It could pay for an API based on tokens used, or it could rent a GPU server that runs all month.
+This memo compares two ways GardenGuru could run the chatbot in production: a per-token API model and an always-on rented GPU.
 
-API assumptions:
+Per-token API assumptions:
 Input price: $0.60 per 1,000,000 input tokens
 Output price: $2.40 per 1,000,000 output tokens
-Average chat: 900 input tokens and 250 output tokens
+Average exchange: 900 input tokens and 250 output tokens
 
-Cost per chat:
+Cost per exchange:
 900 input tokens x $0.60 / 1,000,000 = $0.00054
 250 output tokens x $2.40 / 1,000,000 = $0.00060
-Total per chat = $0.00114
+Total per exchange = $0.00114
 
 Quiet month: 600 customer questions
-Input cost: 600 x 900 = 540,000 tokens = $0.324
-Output cost: 600 x 250 = 150,000 tokens = $0.36
-Total API cost: $0.684, or about $0.68
+Input: 600 x 900 = 540,000 input tokens
+Input cost: 540,000 x $0.60 / 1,000,000 = $0.324
+Output: 600 x 250 = 150,000 output tokens
+Output cost: 150,000 x $2.40 / 1,000,000 = $0.36
+Total API cost: $0.684, about $0.68
 
 Busy month: 45,000 customer questions
-Input cost: 45,000 x 900 = 40,500,000 tokens = $24.30
-Output cost: 45,000 x 250 = 11,250,000 tokens = $27.00
+Input: 45,000 x 900 = 40,500,000 input tokens
+Input cost: 40,500,000 x $0.60 / 1,000,000 = $24.30
+Output: 45,000 x 250 = 11,250,000 output tokens
+Output cost: 11,250,000 x $2.40 / 1,000,000 = $27.00
 Total API cost: $51.30
 
 Always-on rented GPU:
@@ -29,23 +33,30 @@ GPU price: $0.526 per hour
 Monthly runtime: 730 hours
 Monthly cost: $0.526 x 730 = $383.98
 
-The GPU costs $383.98 in both the quiet month and the busy month because it runs all month either way.
+The rented GPU costs $383.98 for the quiet month and $383.98 for the busy month because it is running all month either way.
+The price does not change based on how many customer questions it answers.
 
 Recommendation:
-For GardenGuru, the API is the better choice. In a quiet month, the API costs about $0.68 instead of $383.98. In a busy month, it costs $51.30 instead of $383.98.
+For GardenGuru, the API is better for both the quiet month and the busy month.
+At 600 questions, the API costs about $0.68 instead of $383.98. At 45,000 questions, the API costs $51.30 instead of $383.98.
 
-Break-even point:
-$383.98 / $0.00114 = about 336,825 chats per month
+The break-even point is:
+$383.98 / $0.00114 per exchange = about 336,825 exchanges per month
 
-Below about 337,000 chats per month, the API is cheaper. The rented GPU only starts to make sense if GardenGuru has very high and steady usage. This shows the cloud idea of measured service because the API only charges for what is used. The GPU shows the problem of paying for idle resources because GardenGuru pays even when nobody is using the chatbot.
+Below about 337,000 exchanges per month, the API is cheaper. The rented GPU only starts to make sense for very high, steady usage where the machine will stay busy.
+The API model shows the cloud pricing trait of measured service, because GardenGuru pays only for what it uses.
+The always-on GPU shows the Week 1 warning about paying for idle resources, because the business pays for the server even when no customers are asking questions.
 
 Classification calls:
 
 1. Chat transcripts
-Chat transcripts should be treated as personal information because customers might type names, locations, contact information, or other private details. If some customers are Canadian, GardenGuru should store and process those transcripts in a way that follows Canadian privacy rules. A safer design is to keep Canadian transcripts in a Canadian or Canadian-compliant storage region and limit employee access.
+Chat transcripts can contain personal details, so they should be treated as personal information.
+If some customers are Canadian, GardenGuru must store and process those transcripts in a way that follows Canadian privacy requirements.
+The safest design decision is to keep Canadian customer transcripts in a Canadian or Canadian-compliant storage region and limit who can access them.
 
 2. Payment card numbers
-Credit card numbers are sensitive payment data covered by PCI-DSS. The chatbot should not store, show, or search full card numbers. Payment data should stay inside the payment processor. The bot can use safer information, such as an order ID, payment status, or the last four digits of a card.
+Credit card numbers are highly sensitive payment data covered by PCI-DSS rules. The bot should not look up, store, or display full card numbers to check payment status.
+The correct design decision is to keep card data inside a payment processor and let the bot use a safe order ID, payment status token, or last-four-digits reference instead of raw card numbers.
 
 
 Homework 4 Part 5 Collaboration Memo
@@ -53,25 +64,29 @@ Homework 4 Part 5 Collaboration Memo
 Business: GardenGuru support chatbot
 
 Meeting cost:
-A weekly 45-minute meeting for four people costs:
-4 people x $40/hour x 0.75 hours = $120 per meeting
-$120 x 52 weeks = $6,240 per year
+A weekly 45-minute all-hands for four people costs 4 attendees x $40/hour x 0.75 hours = $120 per meeting. Over 52 weeks, that is $6,240 per year.
 
 Async alternative:
-GardenGuru should move at least half of the meeting agenda to a shared document with comments. Updates about policies, customer trends, status notes, and routine decisions can happen there. Live meeting time should be saved for things that actually need discussion, like disagreements, tradeoffs, and assigning ownership.
+At least half of the agenda should move to a shared document with comments on the one master copy. Policy updates, status notes, customer trends, and routine decisions can be handled there. 
+The remaining synchronous time should be for decisions that need live discussion, such as resolving disagreements, choosing between tradeoffs, and assigning ownership.
 
 Tooling choice:
-Chat: Google Chat, because it is simple and connects with Google accounts.
+Chat: Google Chat, because it is simple for a small team, uses Google identity, and integrates with Drive and Calendar.
 
-Docs: Google Drive and Google Docs, because the team can work from one master copy, leave comments, control permissions, see version history, and export files.
+Docs: Google Drive and Google Docs, because they support one shared master copy, comments, permissions, version history, and export to standard formats.
 
-Meetings: Google Meet, because it works with Google Calendar and does not require another account system.
+Meetings: Google Meet, because it uses the same identity system and calendar invites without adding another account system.
 
 Selection criteria:
-These tools make sense for a small team because they are simple and not too expensive. They also use real user accounts instead of shared passwords. Permissions matter because private drafts should not accidentally become public. Version history, comments, search, and export are useful because the team needs to collaborate without losing track of changes.
+Cost and free-tier edges matter because this is a four-person team and the tools should not cost more than the problem they solve. 
+Identity and SSO fit matter because access should follow real users, not shared passwords. Data export matters because GardenGuru should be able to leave the tool later. 
+Integration matters because chat, docs, calendar, and meetings should connect cleanly. Permissions matter because private drafts should not become public by accident. 
+Ease of use matters because a small team will not maintain a complicated collaboration stack.
 
 Bucket cost:
-The website is about 1 MB, which is about 0.001 GB. At $0.023 per GB-month, storage costs about $0.000023 per month. A busy month with 5 GB transferred out is still inside the first 100 GB free transfer tier, so transfer is $0 in this model. The S3 hosting cost is basically less than one cent per month, not counting tiny request charges.
+The site is roughly 1 MB, which is about 0.001 GB. At $0.023 per GB-month, storage costs about $0.000023 per month. 
+A busy month with 5 GB transferred out is still inside the first 100 GB free transfer tier, so transfer is $0 in this model. The S3 hosting cost is effectively less than one cent per month, not counting tiny request charges.
 
 Comparison:
-Three seats of a $6/user/month collaboration tool cost $18 per month. That is not really paying for storage, because the storage is almost free. The price is for identity, permissions, comments, sharing, notifications, version history, search, support, and an interface that normal users can use without going into the AWS console.
+Three seats of a $6/user/month collaboration SaaS cost $18 per month. That price is not really buying raw storage, because the storage itself is nearly free. 
+It is buying identity, permissions, sharing workflows, comments, notifications, version history, search, support, and an interface normal users can operate without using the AWS console.
