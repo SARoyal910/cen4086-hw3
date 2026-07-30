@@ -1,0 +1,46 @@
+[
+  {
+    "title": "Plant Identification",
+    "text": "Garden Guru helps identify plants using photos uploaded by the user. The app compares images with its plant database and provides likely matches along with growing information, safety notes, and care instructions."
+  },
+  {
+    "title": "Planting Zone Recommendations",
+    "text": "Garden Guru uses your location to determine your USDA Hardiness Zone and recommends plants that are suitable for your climate. Users can also manually select a different planting zone if needed."
+  },
+  {
+    "title": "Garden Planning",
+    "text": "Users can design gardens using raised beds, rows, containers, and pathways. The planner helps organize plant spacing, companion planting, and future garden expansion while maximizing available space."
+  },
+  {
+    "title": "Plant Care Guide",
+    "text": "Every plant includes recommended sunlight, watering frequency, soil preferences, fertilization schedules, and expected growing conditions. Care recommendations are adjusted based on weather and seasonal changes whenever possible."
+  },
+  {
+    "title": "Companion Planting",
+    "text": "Garden Guru recommends plants that grow well together and warns about combinations that may compete for nutrients or attract similar pests. Companion planting can improve plant health and increase harvests."
+  },
+  {
+    "title": "Pest and Disease Help",
+    "text": "Users can learn about common garden pests, diseases, nutrient deficiencies, and treatment options. The app includes prevention tips along with organic and conventional treatment recommendations."
+  },
+  {
+    "title": "Harvest Tracking",
+    "text": "Garden Guru allows users to record harvest dates, crop quantities, notes, and photos. Harvest history helps users compare production from season to season and improve future garden planning."
+  },
+  {
+    "title": "Weather and Frost Alerts",
+    "text": "The app displays local weather forecasts, rainfall predictions, heat advisories, and frost warnings. Weather alerts help users know when to water, cover plants, or delay transplanting."
+  },
+  {
+    "title": "Offline Garden Access",
+    "text": "Saved gardens, plant information, reminders, and harvest logs remain available even without an internet connection. Changes made offline are synchronized automatically when the device reconnects."
+  },
+  {
+    "title": "Community Garden Network",
+    "text": "Garden Guru includes a community where gardeners can share photos, ask questions, exchange growing tips, and help identify plant problems. Users are encouraged to provide respectful, helpful, and accurate information."
+  },
+  {
+    "title": "Watering Reminders",
+    "text": "Garden Guru can create watering reminders for individual plants, containers, raised beds, and vegetable crops such as tomatoes. Reminder timing can be adjusted when recent rainfall or frost alerts suggest watering should be delayed."
+  }
+]

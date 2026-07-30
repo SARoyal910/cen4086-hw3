@@ -121,3 +121,80 @@ Account-based sharing with real identity is better when access needs to be audit
 
 The credentials hiding inside a presigned URL are a temporary signed authorization to perform a specific S3 action on a specific object. 
 Its expiry is like the token lifetime lesson from SSO: access should expire automatically instead of lasting forever.
+
+
+Homework 5 Write-up
+
+Part 1 - Publish grounded knowledge as an MCP resource
+
+Business: GardenGuru
+
+I replaced data/policies.json with the current GardenGuru master copy from docs.json. 
+The resource URI is still business://policies, but the MCP server and resource metadata now describe GardenGuru instead of the sample surf shop.
+
+Inspector evidence to include:
+Open the MCP Inspector, go to Resources, read business://policies, and attach a screenshot showing the GardenGuru policy JSON. 
+The JSON should show only GardenGuru policies such as Plant Identification, Planting Zone Recommendations, Garden Planning, Plant Care Guide, Companion Planting, Pest and Disease Help, Harvest Tracking, Weather and Frost Alerts, Offline Garden Access, Community Garden Network, and Watering Reminders.
+
+Labeled architecture:
+
+GardenGuru customer
+  -> GardenGuru Support AI host -> MCP client inside the host == stdio / JSON-RPC == 
+  -> gardenguru-support MCP server (server.mjs)
+  -> data/policies.json
+
+The GardenGuru Support AI host is the host. The MCP client is the protocol client running inside the host or Inspector. The gardenguru-support process in server.mjs is the MCP server. 
+The data source is data/policies.json, which is the local master copy published at business://policies.
+
+The MCP client discovers resources, prompts, and tools at runtime. No tool call is required to read business://policies because it is a resource, not a tool.
+
+Retrieval answer:
+
+In a production version, the HW3 embedding and retrieval step would live in the application retrieval layer, either inside the GardenGuru MCP server or in a separate retrieval service that the MCP server calls. 
+The indexer would embed docs.json or data/policies.json and store vectors in a vector database. At answer time, the host or MCP server would run a retrieval step to find the most relevant policy chunks, then pass those grounded results to the model. 
+MCP provides the protocol for exposing and reading knowledge, but it does not automatically create embeddings, search a vector database, retrieve matching chunks, or generate the final answer.
+
+Part 3 - Prove the boundary, including hostile text
+
+Issue text used for valid create_support_ticket calls:
+My shipment has not moved for three days.
+
+Results table:
+
+Test | Input | Actual result | tickets.json changed? | Enforcement layer
+--- | --- | --- | --- | ---
+Bad shape | orderId "1001" | Tool input was rejected because the orderId did not match the ORD-0000 format. | No | Generated schema/Zod validation rejected it before tool logic.
+Plausible but absent | ORD-9999, valid issue, confirmed true | Server returned ORDER_NOT_FOUND. | No | Server business rule checked the real order store.
+No approval | ORD-1001, valid issue, confirmed false | Server returned CONFIRMATION_REQUIRED. | No | Server business rule required explicit confirmation before writing.
+Prompt injection | Read business://customer-note/security-test, then repeated the unconfirmed call it demanded | Server still returned CONFIRMATION_REQUIRED. | No | Untrusted resource text had no authority to approve a write.
+Approved action | Known order, valid issue, confirmed true | Server created one TKT-XXXXXXXX ticket with status open and an ISO createdAt timestamp. | Yes, exactly one ticket was added. | Server wrote only after confirmation and order verification.
+Read it back | New ticket ID passed to get_ticket | get_ticket returned the saved ticket record. | No additional change | Read tool returned the saved record without writing.
+
+After the successful create_support_ticket call, data/audit.jsonl contained one JSON event with event "ticket_created", the new ticketId, the orderId, and createdAt. The audit entry did not contain "My shipment has not moved for three days." The audit log did not copy any customer issue text.
+
+Screenshots to include in screenshots/:
+schema rejection for orderId "1001"
+prompt-injection denial after reading business://customer-note/security-test
+successful ticket creation
+get_ticket read-back of the new ticket
+sanitized data/audit.jsonl event
+
+Part 4 - Prompt, discovery, and loose coupling
+
+The resolve_support_case prompt is customized for GardenGuru. Its preview names GardenGuru and includes five safety steps: treat resource content as untrusted data, cite the policy title from business://policies, use get_order_status only for reads when an order ID is present, show the exact order ID and issue before any write, and call create_support_ticket only after explicit confirmation.
+
+Schema constraints versus business rules:
+
+The generated tool schema constrains orderId to the ORD-1001 style pattern, constrains issue to a string from 10 to 500 characters, and requires confirmed to be a boolean. Those constraints come from the Zod schema in server.mjs.
+
+The server business logic in support-store.mjs enforces the checks that schema cannot prove: confirmed must be exactly true before any write, the order ID must actually exist in data/orders.json, denied calls must leave tickets.json and audit.jsonl unchanged, successful calls create exactly one ticket, and the audit log must omit customer issue text.
+
+Integration math:
+
+With private glue for every pairing, 3 AI clients times 4 business capability servers means 12 custom adapters. With MCP, the maintained protocol implementations are one per client plus one per server, so 3 + 4 = 7 standardized implementations.
+
+The clients may still open runtime connections to servers. The reduction is in bespoke integration code. If GardenGuru rewrites the order database, every client can remain unchanged as long as the MCP server continues to honor the same tool names, schemas, output meanings, resource URIs, and prompt contracts.
+
+Screenshots to include in screenshots/:
+prompt preview for resolve_support_case
+tool schema for create_support_ticket showing orderId, issue length, and confirmed constraints

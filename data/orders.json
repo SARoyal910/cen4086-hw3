@@ -1,0 +1,17 @@
+[
+  {
+    "orderId": "ORD-1001",
+    "status": "packing garden starter kit",
+    "eta": "2026-08-01"
+  },
+  {
+    "orderId": "ORD-1002",
+    "status": "out for delivery",
+    "eta": "2026-07-30"
+  },
+  {
+    "orderId": "ORD-1003",
+    "status": "delivered to customer",
+    "eta": "2026-07-27"
+  }
+]

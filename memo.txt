@@ -90,3 +90,38 @@ A busy month with 5 GB transferred out is still inside the first 100 GB free tra
 Comparison:
 Three seats of a $6/user/month collaboration SaaS cost $18 per month. That price is not really buying raw storage, because the storage itself is nearly free. 
 It is buying identity, permissions, sharing workflows, comments, notifications, version history, search, support, and an interface normal users can operate without using the AWS console.
+
+
+Homework 5 Part 5 Design Memo
+
+1. Request classifications
+
+Grounded policy document request: "Can GardenGuru identify a plant from my photo?" This should be answered from the Plant Identification policy because it asks about published app behavior, not a private customer record.
+
+Grounded policy document request: "Will GardenGuru warn me before frost?" This should be answered from the Weather and Frost Alerts policy because the answer is stable business knowledge from the policy documents.
+
+Read tool request: "What is the status of ORD-1002?" This needs get_order_status because the answer depends on the current order store, not a policy document.
+
+Read tool request: "Can you show me ticket TKT-ABCD1234?" This needs get_ticket because the answer depends on an existing saved support record.
+
+Write proposal: "Please open a ticket for ORD-1001 because my shipment has not moved for three days." This proposes changing support data, so create_support_ticket should run only after showing the exact order ID and issue and getting confirmation.
+
+Write proposal: "The package for ORD-1003 arrived damaged; create a case." This also changes support data and may include customer details, so it needs explicit approval before the write.
+
+2. Enforcement layers
+
+Schema validation catches malformed tool input before tool logic runs, such as orderId "1001" instead of the required ORD-0000 pattern. The other layers should not need to guess whether malformed input is usable.
+
+Server business rules catch requests that are well-shaped but unsafe or false, such as ORD-9999 not existing or confirmed being false. A schema can verify format, but only the server can check the actual order store and protect side effects.
+
+Host and human approval catches authorization failures, such as a customer note or model output trying to approve its own write. The host should show the proposed change to the user, and the user must approve it before the server receives confirmed=true.
+
+3. What MCP standardizes
+
+MCP standardizes how a client discovers and calls resources, tools, and prompts, including machine-readable tool schemas and stdio/JSON-RPC communication. It does not supply the model, RAG index, authentication policy, database, or automatic trust. The Inspector ran no model or inference in these tests; it only connected to the MCP server and exercised the published contracts.
+
+4. Pre-approval recommendation
+
+Pre-approve low-consequence read-only access such as reading business://policies and calling get_order_status or get_ticket for records the user is allowed to view. These actions do not change stored data.
+
+Always require a confirmation dialog for create_support_ticket. It changes persistent support records, may include sensitive customer issue text, and can create operational work for staff. The criteria are consequence, reversibility, and data sensitivity, not whether the AI seems confident.
